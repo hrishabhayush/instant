@@ -10,9 +10,9 @@ module.exports = {
   devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
   entry: {
     popup: './src/popup/index.tsx',
-    options: './src/options/index.tsx',
-    background: './src/background/index.ts',
-    content: './src/content/index.ts'
+    options: './src/pages/Options/index.tsx',
+    background: './src/pages/background/index.ts',
+    content: './src/pages/Content/index.ts'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -56,7 +56,7 @@ module.exports = {
       chunks: []
     }),
     new HtmlWebpackPlugin({
-      template: './src/options/options.html',
+      template: './src/pages/Options/options.html',
       filename: 'options.html',
       chunks: ['options']
     }),

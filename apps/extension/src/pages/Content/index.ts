@@ -1,6 +1,3 @@
-// Content script for Chrome Extension
-console.log('Primer Extension content script loaded');
-
 // Create a simple overlay to show extension is active
 const createOverlay = () => {
   const overlay = document.createElement('div');

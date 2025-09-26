@@ -1,6 +1,3 @@
-// Background script for Chrome Extension
-console.log('Primer Extension background script loaded');
-
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('Extension installed:', details);
