@@ -9,9 +9,9 @@ module.exports = {
   mode: isDevelopment ? 'development' : 'production',
   devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
   entry: {
-    popup: './src/popup/index.tsx',
+    popup: './src/pages/Popup/index.tsx',
     options: './src/pages/Options/index.tsx',
-    background: './src/pages/background/index.ts',
+    background: './src/pages/Background/index.ts',
     content: './src/pages/Content/index.ts'
   },
   output: {
@@ -51,7 +51,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/popup/popup.html',
+      template: './src/pages/Popup/popup.html',
       filename: 'popup.html',
       chunks: []
     }),

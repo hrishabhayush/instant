@@ -38,3 +38,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log('Tab updated:', tab.url);
   }
 });
+
+chrome.action.onClicked.addListener((tab) => {
+  console.log('Extension clicked:', tab);
+});

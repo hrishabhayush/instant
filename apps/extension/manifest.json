@@ -5,7 +5,12 @@
   "description": "A Chrome Extension built with React and TypeScript",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.instagram.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
