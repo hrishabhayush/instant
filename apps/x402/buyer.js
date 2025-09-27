@@ -11,11 +11,6 @@ if (!privateKey) {
 }
 
 const account = privateKeyToAccount(`${privateKey}`);
-const client = createWalletClient({
-  account,
-  chain: polygonAmoy,
-  transport: http()
-});
 
 console.log("Using wallet address:", account.address);
 

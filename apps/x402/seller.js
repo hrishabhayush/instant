@@ -16,11 +16,11 @@ app.use(paymentMiddleware(
       network: "polygon-amoy",
       // Optional: Add metadata for better discovery in x402 Bazaar
       config: {
-        description: "Get current weather data for any location",
+        description: "Get current weather data for New York",
         inputSchema: {
           type: "object",
           properties: {
-            location: { type: "string", description: "City name" }
+            location: { type: "string", description: "New York" }
           }
         },
         outputSchema: {
@@ -34,7 +34,7 @@ app.use(paymentMiddleware(
     },
   },
   {
-    url: process.env.FACILITATOR_URL || "https://x402.polygon.technology", // Polygon Amoy facilitator
+    url: process.env.FACILITATOR_URL || "https://x402.polygon.technology", 
   }
 ));
 
