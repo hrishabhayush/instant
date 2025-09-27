@@ -4,6 +4,14 @@ Discover yourself, but pay through primer on Instagram.
 
 ## Setup 
 
+### Backend 
+
+```bash
+cd apps/backend
+pnpm install
+pnpm start
+```
+
 ```bash
 git clone https://github.com/hrishabhayush/primer-2.0.git
 cd primer-2.0
