@@ -30,6 +30,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             return
         }
         
+        // Show loading notification immediately
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0] && tabs[0].url.includes('instagram.com')) {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    action: "showLoadingButton"
+                })
+            }
+        })
+        
         // Send message to content script with specific targeting info
         chrome.tabs.sendMessage(tab.id, { 
             action: "captureReelFrame",
@@ -61,11 +70,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     type: 'basic',
                     iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
                     title: 'Primer 2.0',
-                    message: 'Analyzing clothing... Please wait.'
+                    message: 'Analyzing reel... Please wait.'
                 })
                 
                 // Send image to backend for AI analysis
-                analyzeClothingWithAI(response.imageData, response.dimensions, response.videoInfo)
+                analyzeReelWithAI(response.imageData, response.dimensions, response.videoInfo)
                 
             } else {
                 console.error("❌ Frame capture failed:", response)
@@ -74,12 +83,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 })
 
-// Function to analyze clothing with AI
-async function analyzeClothingWithAI(imageData, dimensions, videoInfo) {
+// Function to analyze reel with AI
+async function analyzeReelWithAI(imageData, dimensions, videoInfo) {
     try {
-        console.log("🤖 Sending image to AI for clothing analysis...")
+        console.log("🤖 Sending image to AI for reel analysis...")
         
-        const response = await fetch('http://localhost:3001/analyze-clothing', {
+        const response = await fetch('http://localhost:3001/analyze-reel', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -106,16 +115,35 @@ async function analyzeClothingWithAI(imageData, dimensions, videoInfo) {
             analysisStatus: 'complete'
         })
         
-        // Show success notification
+        // Make the extension icon more prominent and show completion notification
+        chrome.action.setBadgeText({
+            text: "✓"
+        })
+        
+        chrome.action.setBadgeBackgroundColor({
+            color: "#4CAF50"
+        })
+        
+        // Inject floating button into Instagram page
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0] && tabs[0].url.includes('instagram.com')) {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    action: "showFloatingButton",
+                    itemCount: analysisResult.items?.length || 0
+                })
+            }
+        })
+        
+        // Also show desktop notification as backup
         chrome.notifications.create({
             type: 'basic',
             iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-            title: 'Primer 2.0',
-            message: `Found ${analysisResult.items?.length || 0} clothing items! Click extension to see results.`
+            title: '🎉 Primer 2.0 - Analysis Complete!',
+            message: `Found ${analysisResult.items?.length || 0} clothing items! Check Instagram page for shopping button.`
         })
         
     } catch (error) {
-        console.error("❌ AI analysis failed:", error)
+        console.error("❌ AI reel analysis failed:", error)
         
         // Store error state
         chrome.storage.local.set({
@@ -132,17 +160,61 @@ async function analyzeClothingWithAI(imageData, dimensions, videoInfo) {
             type: 'basic',
             iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
             title: 'Primer 2.0',
-            message: 'Analysis failed. Click extension for details.'
+            message: 'Reel analysis failed. Click extension for details.'
         })
     }
 }
 
-// Handle messages from popup
+// Handle extension icon clicks
+chrome.action.onClicked.addListener((tab) => {
+    // Clear the badge when user clicks the extension icon
+    chrome.action.setBadgeText({
+        text: ""
+    })
+    
+    console.log("Extension icon clicked - popup will open with latest analysis")
+})
+
+// Handle notification clicks - open extension popup
+chrome.notifications.onClicked.addListener((notificationId) => {
+    console.log("Notification clicked, opening extension popup")
+    
+    // Clear the badge
+    chrome.action.setBadgeText({ text: "" })
+    
+    // Try to open popup (this might not work in all contexts)
+    try {
+        chrome.action.openPopup()
+    } catch (error) {
+        console.log("Could not auto-open popup:", error)
+        // Fallback: Focus the extension icon so user knows to click it
+        chrome.action.setBadgeText({ text: "!" })
+        chrome.action.setBadgeBackgroundColor({ color: "#FF5722" })
+    }
+})
+
+// Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "getLastCapturedImage") {
         chrome.storage.local.get(['lastCapturedImage', 'lastAnalysis', 'analysisStatus', 'analysisError', 'timestamp'], (result) => {
             sendResponse(result)
         })
         return true // Keep message channel open
+    } else if (request.action === "openExtension") {
+        // Handle floating button click - try to open popup
+        console.log("Floating button clicked, attempting to open extension")
+        
+        // Clear badge
+        chrome.action.setBadgeText({ text: "" })
+        
+        // Try to open popup
+        try {
+            chrome.action.openPopup()
+        } catch (error) {
+            console.log("Could not auto-open popup:", error)
+            // Fallback: Make extension icon more prominent
+            chrome.action.setBadgeText({ text: "!" })
+            chrome.action.setBadgeBackgroundColor({ color: "#FF5722" })
+        }
     }
 })

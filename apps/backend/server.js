@@ -52,8 +52,8 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Analyze clothing in Instagram reel image
-app.post('/analyze-clothing', async (req, res) => {
+// Analyze Instagram reel image
+app.post('/analyze-reel', async (req, res) => {
     try {
         const { imageData } = req.body;
         
@@ -69,7 +69,7 @@ app.post('/analyze-clothing', async (req, res) => {
             });
         }
 
-        console.log('Analyzing clothing in image...');
+        console.log('Analyzing reel image...');
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
@@ -134,7 +134,7 @@ Example format:
             });
         }
 
-        console.log('Clothing analysis complete:', clothingItems);
+        console.log('Reel analysis complete:', clothingItems);
 
         res.json({
             success: true,
@@ -143,9 +143,9 @@ Example format:
         });
 
     } catch (error) {
-        console.error('Error analyzing clothing:', error);
+        console.error('Error analyzing reel:', error);
         res.status(500).json({ 
-            error: 'Failed to analyze clothing',
+            error: 'Failed to analyze reel',
             message: error.message
         });
     }
@@ -219,7 +219,7 @@ app.use((req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Primer 2.0 Backend running on port ${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔍 Clothing analysis: http://localhost:${PORT}/analyze-clothing`);
+    console.log(`🔍 Reel analysis: http://localhost:${PORT}/analyze-reel`);
     console.log(`🧪 Test endpoint: http://localhost:${PORT}/test-analysis`);
     
     if (!process.env.OPENAI_API_KEY) {

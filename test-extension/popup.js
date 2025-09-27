@@ -3,6 +3,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("🧪 Popup loaded!")
     
+    // Clear extension badge when popup opens
+    chrome.action.setBadgeText({ text: "" })
+    
     const statusDiv = document.getElementById('status')
     const imageContainer = document.getElementById('imageContainer')
     const capturedImage = document.getElementById('capturedImage')
