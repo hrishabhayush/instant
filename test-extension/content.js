@@ -8,17 +8,43 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     if (request.action === "captureReelFrame") {
         console.log("🎬 Capturing Instagram reel frame...")
+        console.log("🎯 Target element ID:", request.targetElementId)
         
-        const result = captureInstagramReelFrame()
+        const result = captureInstagramReelFrame(request.targetElementId)
         sendResponse(result)
     }
 })
 
-// Function to capture Instagram reel frame
-function captureInstagramReelFrame() {
+// Function to capture Instagram reel frame with dynamic targeting
+function captureInstagramReelFrame(targetElementId) {
     try {
-        // Find Instagram video element
-        const video = document.querySelector('video[playsinline]')
+        let video = null
+        
+        // If we have a target element ID, try to find the specific video
+        if (targetElementId) {
+            console.log("🎯 Looking for video near target element:", targetElementId)
+            
+            // Method 1: Find video by traversing from the clicked element
+            const clickedElement = document.querySelector(`[data-extension-target="${targetElementId}"]`)
+            if (clickedElement) {
+                // Look for video within or near the clicked element
+                video = clickedElement.querySelector('video[playsinline]') || 
+                       clickedElement.closest('video[playsinline]') ||
+                       clickedElement.parentElement?.querySelector('video[playsinline]')
+            }
+        }
+        
+        // Method 2: Find the most visible/active video if target method failed
+        if (!video) {
+            console.log("🎯 Target method failed, finding most visible video...")
+            video = findMostVisibleVideo()
+        }
+        
+        // Method 3: Fallback to first video (original behavior)
+        if (!video) {
+            console.log("🎯 Using fallback: first video found")
+            video = document.querySelector('video[playsinline]')
+        }
         
         if (!video) {
             console.log("❌ No Instagram video found")
@@ -31,7 +57,8 @@ function captureInstagramReelFrame() {
         console.log("✅ Instagram video found:", {
             src: video.src,
             dimensions: `${video.videoWidth}x${video.videoHeight}`,
-            readyState: video.readyState
+            readyState: video.readyState,
+            isVisible: isElementVisible(video)
         })
         
         // Create canvas to capture video frame
@@ -72,6 +99,60 @@ function captureInstagramReelFrame() {
             error: error.message
         }
     }
+}
+
+// Helper function to find the most visible video
+function findMostVisibleVideo() {
+    const videos = document.querySelectorAll('video[playsinline]')
+    let mostVisible = null
+    let maxVisibility = 0
+    
+    videos.forEach(video => {
+        const rect = video.getBoundingClientRect()
+        const visibility = calculateVisibility(rect)
+        
+        console.log(`📹 Video visibility: ${visibility}%`, {
+            src: video.src,
+            rect: rect
+        })
+        
+        if (visibility > maxVisibility) {
+            maxVisibility = visibility
+            mostVisible = video
+        }
+    })
+    
+    return mostVisible
+}
+
+// Helper function to calculate element visibility percentage
+function calculateVisibility(rect) {
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    
+    // Calculate intersection with viewport
+    const visibleLeft = Math.max(0, rect.left)
+    const visibleTop = Math.max(0, rect.top)
+    const visibleRight = Math.min(windowWidth, rect.right)
+    const visibleBottom = Math.min(windowHeight, rect.bottom)
+    
+    // Calculate visible area
+    const visibleWidth = Math.max(0, visibleRight - visibleLeft)
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+    const visibleArea = visibleWidth * visibleHeight
+    
+    // Calculate total area
+    const totalArea = rect.width * rect.height
+    
+    // Return visibility percentage
+    return totalArea > 0 ? (visibleArea / totalArea) * 100 : 0
+}
+
+// Helper function to check if element is visible
+function isElementVisible(element) {
+    const rect = element.getBoundingClientRect()
+    const visibility = calculateVisibility(rect)
+    return visibility > 50 // Consider visible if > 50% visible
 }
 
 // Test function to verify content script is working

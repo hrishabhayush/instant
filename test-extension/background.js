@@ -30,10 +30,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             return
         }
         
-        // Send message to content script to capture video frame
+        // Send message to content script with specific targeting info
         chrome.tabs.sendMessage(tab.id, { 
             action: "captureReelFrame",
-            tabId: tab.id 
+            tabId: tab.id,
+            // Pass the specific element that was right-clicked
+            targetElementId: info.targetElementId,
+            frameId: info.frameId
         }, (response) => {
             if (chrome.runtime.lastError) {
                 console.error("Error sending message:", chrome.runtime.lastError)
