@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('react-refresh-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -42,7 +43,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
       }
     ]
   },
@@ -53,7 +54,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/pages/Popup/popup.html',
       filename: 'popup.html',
-      chunks: []
+      chunks: ['popup']
     }),
     new HtmlWebpackPlugin({
       template: './src/pages/Options/options.html',
@@ -65,8 +66,15 @@ module.exports = {
         {
           from: 'manifest.json',
           to: 'manifest.json'
+        },
+        {
+          from: 'icons',
+          to: 'icons'
         }
       ]
+    }),
+    new MiniCssExtractPlugin({
+      filename: '[name].css'
     }),
     isDevelopment && new ReactRefreshWebpackPlugin()
   ].filter(Boolean),
