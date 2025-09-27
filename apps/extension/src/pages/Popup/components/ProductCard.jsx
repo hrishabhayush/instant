@@ -1,14 +1,6 @@
 import React from 'react';
 
-interface ProductCardProps {
-  title: string;
-  description: string;
-  time: string;
-  svgAssets: any;
-  onShowMore?: () => void;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ title, description, time, svgAssets, onShowMore }) => {
+const ProductCard = ({ title, description, time, svgAssets, onShowMore }) => {
   return (
     <div style={{
       display: 'flex',

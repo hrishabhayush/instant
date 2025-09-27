@@ -1,7 +1,7 @@
 import React from 'react';
 import App from './App';
 
-const Popup: React.FC = () => {
+const Popup = () => {
   console.log('Popup component is rendering');
   
   return <App />;

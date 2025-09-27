@@ -5,14 +5,10 @@ import Notification from '../components/Notification';
 import ProductCard from '../components/ProductCard';
 import BottomSection from '../components/BottomSection';
 
-interface HomePageProps {
-  svgAssets: any;
-}
-
-const HomePage: React.FC<HomePageProps> = ({ svgAssets }) => {
+const HomePage = ({ svgAssets }) => {
   const navigate = useNavigate();
 
-  const handleShowMore = (productId: string) => {
+  const handleShowMore = (productId) => {
     navigate(`/product/${productId}`);
   };
 

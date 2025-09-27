@@ -1,10 +1,6 @@
 import React from 'react';
 
-interface BottomSectionProps {
-  svgAssets: any;
-}
-
-const BottomSection: React.FC<BottomSectionProps> = ({ svgAssets }) => {
+const BottomSection = ({ svgAssets }) => {
   return (
     <div style={{
       padding: '20px',

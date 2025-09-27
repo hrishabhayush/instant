@@ -15,10 +15,10 @@ module.exports = {
   mode: isDevelopment ? 'development' : 'production',
   devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
   entry: {
-    popup: ['./src/pages/Popup/react-refresh-fix.js', './src/pages/Popup/index.tsx'],
-    options: './src/pages/Options/index.tsx',
-    background: './src/pages/Background/index.ts',
-    content: './src/pages/Content/index.ts'
+    popup: ['./src/pages/Popup/react-refresh-fix.js', './src/pages/Popup/index.jsx'],
+    options: './src/pages/Options/index.jsx',
+    background: './src/pages/Background/index.js',
+    content: './src/pages/Content/index.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -28,15 +28,14 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.(js|jsx)$/,
         use: [
           {
             loader: 'babel-loader',
             options: {
               presets: [
                 '@babel/preset-env',
-                '@babel/preset-react',
-                '@babel/preset-typescript'
+                '@babel/preset-react'
               ],
               plugins: [
                 ...(isDevelopment ? [require.resolve('react-refresh/babel')] : [])
@@ -53,7 +52,7 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx']
+    extensions: ['.jsx', '.js']
   },
   plugins: [
     new HtmlWebpackPlugin({

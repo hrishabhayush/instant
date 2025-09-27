@@ -2,17 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 
-interface ProductDetailsPageProps {
-  svgAssets: any;
-}
-
-const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ svgAssets }) => {
+const ProductDetailsPage = ({ svgAssets }) => {
   const navigate = useNavigate();
-  const { productId } = useParams<{ productId: string }>();
+  const { productId } = useParams();
 
   // Mock product data with multiple sources for each product type
-  const getProductData = (id: string) => {
-    const productVariants: { [key: string]: any[] } = {
+  const getProductData = (id) => {
+    const productVariants = {
       'white-vest': [
         {
           title: 'White Vest',

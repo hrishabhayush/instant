@@ -1,11 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface SettingsPageProps {
-  svgAssets: any;
-}
-
-const SettingsPage: React.FC<SettingsPageProps> = ({ svgAssets }) => {
+const SettingsPage = ({ svgAssets }) => {
   const navigate = useNavigate();
 
   const handleBack = () => {

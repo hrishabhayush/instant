@@ -1,10 +1,6 @@
 import React from 'react';
 
-interface NotificationProps {
-  svgAssets: any;
-}
-
-const Notification: React.FC<NotificationProps> = ({ svgAssets }) => {
+const Notification = ({ svgAssets }) => {
   return (
     <div style={{
       display: 'flex',

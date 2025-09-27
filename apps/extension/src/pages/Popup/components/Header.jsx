@@ -1,11 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface HeaderProps {
-  svgAssets: any;
-}
-
-const Header: React.FC<HeaderProps> = ({ svgAssets }) => {
+const Header = ({ svgAssets }) => {
   const navigate = useNavigate();
 
   const handleSettingsClick = () => {

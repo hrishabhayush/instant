@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Options: React.FC = () => {
+const Options = () => {
   const [settings, setSettings] = useState({
     theme: 'light',
     notifications: true,
@@ -18,7 +18,7 @@ const Options: React.FC = () => {
     });
   }, []);
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (key, value) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     
