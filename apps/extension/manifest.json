@@ -1,29 +1,52 @@
 {
-  "manifest_version": 3,
-  "name": "Primer Extension",
-  "version": "1.0.0",
-  "description": "A Chrome Extension built with React and TypeScript",
-  "permissions": [
-    "activeTab",
-    "storage",
-    "tabs",
-    "scripting"
-  ],
-  "host_permissions": [
-    "https://www.instagram.com/*"
-  ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "Primer Extension"
-  },
-  "background": {
-    "service_worker": "background.bundle.js"
-  },
-  "options_page": "options.html",
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.bundle.js"]
-    }
-  ]
+    "manifest_version": 3,
+    "name": "Primer 2.0 - Crypto Payments",
+    "version": "2.0",
+    "description": "Pay with crypto on Amazon using x402 and automated gift cards",
+    "permissions": ["activeTab", "storage", "scripting", "notifications", "tabs", "contextMenus"],
+    "host_permissions": [
+        "https://www.amazon.com/*",
+        "https://www.amazon.in/*",
+        "https://www.amazon.co.uk/*",
+        "https://www.amazon.ca/*",
+        "https://www.amazon.de/*",
+        "https://www.amazon.fr/*",
+        "https://www.amazon.it/*",
+        "https://www.amazon.es/*",
+        "https://www.amazon.com.au/*",
+        "https://www.amazon.co.jp/*",
+        "https://www.amazon.com.br/*",
+        "https://www.amazon.com.mx/*",
+        "https://www.instagram.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [{
+        "matches": [
+            "https://www.amazon.com/*",
+            "https://www.amazon.in/*",
+            "https://www.amazon.co.uk/*",
+            "https://www.amazon.ca/*",
+            "https://www.amazon.de/*",
+            "https://www.amazon.fr/*",
+            "https://www.amazon.it/*",
+            "https://www.amazon.es/*",
+            "https://www.amazon.com.au/*",
+            "https://www.amazon.co.jp/*",
+            "https://www.amazon.com.br/*",
+            "https://www.amazon.com.mx/*",
+            "https://www.instagram.com/*"
+        ],
+        "js": ["amazon-gift-card.js", "content.js"],
+        "run_at": "document_end"
+    }],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Primer 2.0 - Crypto Payments"
+    },
+    "web_accessible_resources": [{
+        "resources": ["amazon-gift-card.js"],
+        "matches": ["<all_urls>"]
+    }]
 }

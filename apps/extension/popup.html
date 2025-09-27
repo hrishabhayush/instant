@@ -2,13 +2,13 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Instagram Reels Test</title>
+    <title>Primer 2.0 - Crypto Payments</title>
     <style>
         body {
             width: 350px;
             padding: 20px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5dc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #333;
             margin: 0;
         }
@@ -22,10 +22,11 @@
             margin: 0;
             font-size: 18px;
             font-weight: 600;
+            color: white;
         }
         
         .status {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 15px;
@@ -42,12 +43,6 @@
             border: 1px solid #f44336;
         }
         
-        .image-preview {
-            max-width: 100%;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        
         .info {
             font-size: 12px;
             opacity: 0.8;
@@ -55,7 +50,7 @@
         }
         
         .button {
-            background: #8b7355;
+            background: #4CAF50;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -64,35 +59,38 @@
             width: 100%;
             font-size: 14px;
             margin: 5px 0;
+            font-weight: 600;
         }
         
         .button:hover {
-            background: #7a6248;
+            background: #45a049;
         }
         
         .button:disabled {
             background: #999;
             cursor: not-allowed;
         }
+        
+        .clear-button {
+            background: #f44336;
+        }
+        
+        .clear-button:hover {
+            background: #da190b;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Instagram Reels Test</h1>
+        <h1>🚀 Primer 2.0</h1>
     </div>
     
     <div id="status" class="status">
-        <p>Extension loaded. Right-click on an Instagram reel to test!</p>
+        <p>Primer 2.0 ready! Visit any Amazon product page for automatic add to cart.</p>
     </div>
     
-    <div id="imageContainer" style="display: none;">
-        <h3>Captured Frame:</h3>
-        <img id="capturedImage" class="image-preview" />
-        <div id="imageInfo" class="info"></div>
-    </div>
-    
-    <button id="testButton" class="button">Test Frame Capture</button>
-    <button id="clearButton" class="button">Clear Results</button>
+    <button id="testButton" class="button">Test Add to Cart</button>
+    <button id="clearButton" class="button clear-button">Clear Status</button>
     
     <script src="popup.js"></script>
 </body>
