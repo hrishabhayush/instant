@@ -4,6 +4,14 @@ Discover yourself, but pay through primer on Instagram.
 
 ## Setup 
 
+### Cloning the repository 
+
+```bash
+git clone https://github.com/hrishabhayush/primer-2.0.git
+cd primer-2.0
+pnpm install
+```
+
 ### Backend 
 
 ```bash
@@ -12,17 +20,6 @@ pnpm install
 pnpm start
 ```
 
-```bash
-git clone https://github.com/hrishabhayush/primer-2.0.git
-cd primer-2.0
-pnpm install
-```
-
 Starting the chrome extension 
 
-```bash
-cd apps/extension
-pnpm build
-```
-
-# Most of the file that contains the first UI would be inside popup.html
+Load unpack the extension folder which is all written in javascript. 
