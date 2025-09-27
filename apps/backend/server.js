@@ -2,9 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const OpenAI = require('openai');
+const simpleProductMatcher = require('./services/simpleProductMatcher');
+const { findSimilarProducts } = require('./matcher');
+const { testAmazonAPI } = require('./scrapers/serpapi');
 
 // Load environment variables
 dotenv.config();
+
+// Validate required environment variables
+if (!process.env.OPENAI_API_KEY) {
+    console.error('ERROR: OPENAI_API_KEY is required but not set.');
+    console.error('Please create a .env file with your OpenAI API key:');
+    console.error('OPENAI_API_KEY=your_api_key_here');
+    process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -62,6 +73,20 @@ app.post('/analyze-reel', async (req, res) => {
                 error: 'No image data provided' 
             });
         }
+
+        // Validate image data format
+        if (!imageData.startsWith('data:image/')) {
+            console.error('❌ Invalid image data format:', imageData.substring(0, 50) + '...');
+            return res.status(400).json({ 
+                error: 'Invalid image data format. Expected data URL.' 
+            });
+        }
+
+        console.log('📸 Image data received:', {
+            length: imageData.length,
+            format: imageData.substring(0, 20) + '...',
+            isDataUrl: imageData.startsWith('data:image/')
+        });
 
         if (!process.env.OPENAI_API_KEY) {
             return res.status(500).json({ 
@@ -151,6 +176,93 @@ Example format:
     }
 });
 
+// Search for similar products using SerpAPI + OpenAI
+app.post('/search-similar-products', async (req, res) => {
+    try {
+        const { reelImageData, selectedClothingItem } = req.body;
+        
+        if (!reelImageData || !selectedClothingItem) {
+            return res.status(400).json({ 
+                error: 'Missing required fields: reelImageData and selectedClothingItem' 
+            });
+        }
+
+        console.log('🔍 Searching for similar products...');
+        console.log('Selected clothing:', selectedClothingItem);
+
+        // Create search query from selected clothing item (avoid redundancy)
+        const searchQuery = selectedClothingItem.description;
+        
+        // Use SerpAPI + OpenAI product matching
+        const results = await findSimilarProducts(reelImageData, searchQuery);
+        
+        // Check if there was an error in the matching process
+        if (results.error) {
+            return res.status(500).json({
+                success: false,
+                error: results.error,
+                message: results.message || "Product matching failed",
+                fallback_suggestion: results.fallback_suggestion
+            });
+        }
+        
+        console.log(`✅ Found 1 best match + ${results.similar_options?.length || 0} alternatives`);
+
+        // Convert to expected format for extension compatibility
+        const bestMatch = results.best_match ? {
+            name: results.best_match.product_name,
+            price: results.best_match.price,
+            image: results.best_match.image_url,
+            imageUrl: results.best_match.image_url,
+            link: results.best_match.link,
+            source: results.best_match.site,
+            description: results.best_match.description,
+            similarity: 0.9
+        } : null;
+        
+        console.log('🔗 Best match link:', results.best_match?.link);
+        console.log('🔗 Best match source:', results.best_match?.site);
+
+        const alternatives = (results.similar_options || []).map((option, index) => {
+            console.log(`🔗 Alternative ${index + 1} link:`, option.link);
+            console.log(`🔗 Alternative ${index + 1} source:`, option.site);
+            return {
+                name: option.product_name,
+                price: option.price,
+                image: option.image_url,
+                imageUrl: option.image_url,
+                link: option.link,
+                source: option.site,
+                description: option.description,
+                similarity: Math.max(0.7, 0.9 - (index * 0.05))
+            };
+        });
+
+        const response = {
+            success: true,
+            selectedItem: selectedClothingItem,
+            bestMatch: bestMatch,
+            alternatives: alternatives,
+            similarProducts: alternatives, // For extension compatibility
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('📤 Sending response to extension:');
+        console.log('📤 Best match:', bestMatch);
+        console.log('📤 Alternatives count:', alternatives.length);
+        console.log('📤 First alternative:', alternatives[0]);
+        
+        res.json(response);
+
+    } catch (error) {
+        console.error('❌ Error searching similar products:', error);
+        res.status(500).json({ 
+            error: 'Failed to search similar products',
+            message: error.message
+        });
+    }
+});
+
 // Test endpoint for development
 app.post('/test-analysis', async (req, res) => {
     try {
@@ -198,6 +310,21 @@ app.post('/test-analysis', async (req, res) => {
     }
 });
 
+// Test Amazon API endpoint
+app.get('/test-amazon-api', async (req, res) => {
+    try {
+        console.log("🧪 Testing Amazon API via endpoint...");
+        const result = await testAmazonAPI();
+        res.json(result);
+    } catch (error) {
+        console.error('Error testing Amazon API:', error);
+        res.status(500).json({ 
+            error: 'Amazon API test failed',
+            message: error.message
+        });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Server error:', err);
@@ -217,12 +344,18 @@ app.use((req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Primer 2.0 Backend running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`🔍 Reel analysis: http://localhost:${PORT}/analyze-reel`);
-    console.log(`🧪 Test endpoint: http://localhost:${PORT}/test-analysis`);
+    console.log(`Primer 2.0 Backend running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Reel analysis: http://localhost:${PORT}/analyze-reel`);
+    console.log(`Product search: http://localhost:${PORT}/search-similar-products`);
+    console.log(`Test endpoint: http://localhost:${PORT}/test-analysis`);
+    console.log(`Amazon API test: http://localhost:${PORT}/test-amazon-api`);
     
     if (!process.env.OPENAI_API_KEY) {
-        console.log('⚠️  WARNING: OPENAI_API_KEY not set. Create .env file with your OpenAI API key.');
+        console.log('WARNING: OPENAI_API_KEY not set. Create .env file with your OpenAI API key.');
+    }
+    
+    if (!process.env.SERPAPI_KEY) {
+        console.log('WARNING: SERPAPI_KEY not set. Create .env file with your SerpAPI key.');
     }
 });

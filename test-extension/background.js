@@ -43,9 +43,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         chrome.tabs.sendMessage(tab.id, { 
             action: "captureReelFrame",
             tabId: tab.id,
-            // Pass the specific element that was right-clicked
-            targetElementId: info.targetElementId,
-            frameId: info.frameId
+            // Pass context menu info for targeting
+            pageUrl: info.pageUrl,
+            frameId: info.frameId,
+            mediaType: info.mediaType
         }, (response) => {
             if (chrome.runtime.lastError) {
                 console.error("Error sending message:", chrome.runtime.lastError)
@@ -86,6 +87,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // Function to analyze reel with AI
 async function analyzeReelWithAI(imageData, dimensions, videoInfo) {
     try {
+        // Clear previous results when starting new analysis
+        console.log("🧹 Clearing previous results for new analysis...")
+        chrome.storage.local.remove(['lastCapturedImage', 'lastDimensions', 'lastVideoInfo', 'lastAnalysis', 'lastSearchResults'])
+        
         console.log("🤖 Sending image to AI for reel analysis...")
         
         const response = await fetch('http://localhost:3001/analyze-reel', {

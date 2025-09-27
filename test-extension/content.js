@@ -8,9 +8,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     if (request.action === "captureReelFrame") {
         console.log("🎬 Capturing Instagram reel frame...")
-        console.log("🎯 Target element ID:", request.targetElementId)
+        console.log("🎯 Context info:", { pageUrl: request.pageUrl, frameId: request.frameId, mediaType: request.mediaType })
         
-        const result = captureInstagramReelFrame(request.targetElementId)
+        const result = captureInstagramReelFrame(request.pageUrl, request.frameId, request.mediaType)
         sendResponse(result)
     } else if (request.action === "showFloatingButton") {
         console.log("🛒 Showing floating shopping button")
@@ -22,31 +22,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 })
 
 // Function to capture Instagram reel frame with dynamic targeting
-function captureInstagramReelFrame(targetElementId) {
+function captureInstagramReelFrame(pageUrl, frameId, mediaType) {
     try {
+        console.log("🎯 Context info:", { pageUrl, frameId, mediaType })
+        
         let video = null
         
-        // If we have a target element ID, try to find the specific video
-        if (targetElementId) {
-            console.log("🎯 Looking for video near target element:", targetElementId)
-            
-            // Method 1: Find video by traversing from the clicked element
-            const clickedElement = document.querySelector(`[data-extension-target="${targetElementId}"]`)
-            if (clickedElement) {
-                // Look for video within or near the clicked element
-                video = clickedElement.querySelector('video[playsinline]') || 
-                       clickedElement.closest('video[playsinline]') ||
-                       clickedElement.parentElement?.querySelector('video[playsinline]')
-            }
-        }
+        // Method 1: Find the most visible/active video (primary method)
+        console.log("🎯 Finding most visible video...")
+        video = findMostVisibleVideo()
         
-        // Method 2: Find the most visible/active video if target method failed
-        if (!video) {
-            console.log("🎯 Target method failed, finding most visible video...")
-            video = findMostVisibleVideo()
-        }
-        
-        // Method 3: Fallback to first video (original behavior)
+        // Method 2: Fallback to first video if no visible video found
         if (!video) {
             console.log("🎯 Using fallback: first video found")
             video = document.querySelector('video[playsinline]')
@@ -163,14 +149,26 @@ function isElementVisible(element) {
 
 // Function to show floating shopping button
 function showFloatingShoppingButton(itemCount) {
-    // Remove existing button if any
+    // Remove existing button if any (including loading button)
     const existingButton = document.getElementById('primer-floating-button')
     if (existingButton) {
+        console.log("🗑️ Removing existing button before showing shopping button")
         existingButton.remove()
     }
     
-    // Create floating button
-    const button = document.createElement('div')
+    // Also remove any loading notifications
+    const loadingNotifications = document.querySelectorAll('[id*="primer"], [class*="primer"]')
+    loadingNotifications.forEach(el => {
+        if (el.id !== 'primer-floating-button') {
+            console.log("🗑️ Removing loading notification:", el.id)
+            el.remove()
+        }
+    })
+    
+    // Small delay to ensure DOM is updated
+    setTimeout(() => {
+        // Create floating button
+        const button = document.createElement('div')
     button.id = 'primer-floating-button'
     button.innerHTML = `
         <div style="
@@ -221,6 +219,8 @@ function showFloatingShoppingButton(itemCount) {
             button.remove()
         }
     }, 30000)
+    
+    }, 100) // Close the setTimeout for DOM update
 }
 
 // Function to show loading button
