@@ -37,6 +37,12 @@ If the extension is still blank, check for errors:
 <script defer src="popup.bundle.js"></script>
 ```
 
+#### **Issue: `$RefreshSig$ is not defined` Error**
+This error occurs when React Refresh code is included in production builds. **FIXED** ✅
+- ✅ Added fallback functions in HTML template
+- ✅ React Refresh functions are now properly handled
+- ✅ Extension should load without this error
+
 #### **Issue: Chrome Extension CSP (Content Security Policy)**
 If you see CSP errors, the extension might be blocking inline scripts. Our setup avoids this by:
 - ✅ All JavaScript in separate `.js` files

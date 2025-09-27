@@ -6,11 +6,16 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+// Ensure React Refresh is completely disabled in production
+if (!isDevelopment) {
+  process.env.FAST_REFRESH = 'false';
+}
+
 module.exports = {
   mode: isDevelopment ? 'development' : 'production',
   devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
   entry: {
-    popup: './src/pages/Popup/index.tsx',
+    popup: ['./src/pages/Popup/react-refresh-fix.js', './src/pages/Popup/index.tsx'],
     options: './src/pages/Options/index.tsx',
     background: './src/pages/Background/index.ts',
     content: './src/pages/Content/index.ts'
@@ -34,8 +39,8 @@ module.exports = {
                 '@babel/preset-typescript'
               ],
               plugins: [
-                isDevelopment && require.resolve('react-refresh/babel')
-              ].filter(Boolean)
+                ...(isDevelopment ? [require.resolve('react-refresh/babel')] : [])
+              ]
             }
           }
         ],
@@ -87,8 +92,8 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: '[name].css'
     }),
-    isDevelopment && new ReactRefreshWebpackPlugin()
-  ].filter(Boolean),
+    ...(isDevelopment ? [new ReactRefreshWebpackPlugin()] : [])
+  ],
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist')

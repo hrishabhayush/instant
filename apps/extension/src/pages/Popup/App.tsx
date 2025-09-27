@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ProductDetailsPage from './pages/ProductDetailsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -8,14 +8,22 @@ import SettingsPage from './pages/SettingsPage';
 async function loadSVG(path: string): Promise<string> {
   try {
     if (typeof chrome !== 'undefined' && chrome.runtime) {
-      const response = await fetch(chrome.runtime.getURL(path));
-      return await response.text();
+      const url = chrome.runtime.getURL(path);
+      console.log('Loading SVG from:', url);
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error('Failed to load SVG:', path, 'Status:', response.status);
+        return '';
+      }
+      const content = await response.text();
+      console.log('Successfully loaded SVG:', path, 'Length:', content.length);
+      return content;
     } else {
       console.warn('Chrome runtime not available for:', path);
       return '';
     }
   } catch (error) {
-    console.error('Error loading SVG:', error);
+    console.error('Error loading SVG:', path, error);
     return '';
   }
 }
@@ -26,6 +34,9 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    let hasLoaded = false;
+
     const loadAssets = async () => {
       console.log('Loading SVG assets...');
       
@@ -42,13 +53,21 @@ const App: React.FC = () => {
           vector: await loadSVG('src/assets/sources/svgs/Vector.svg')
         };
         
-        console.log('SVG assets loaded:', Object.keys(assets));
-        console.log('Sample asset content:', assets.instant ? 'instant loaded' : 'instant failed');
-        setSvgAssets(assets);
-        setIsLoading(false);
+        if (isMounted && !hasLoaded) {
+          hasLoaded = true;
+          console.log('SVG assets loaded:', Object.keys(assets));
+          console.log('Sample asset content:', assets.instant ? 'instant loaded' : 'instant failed');
+          setSvgAssets(assets);
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error('Error loading assets:', error);
-        setIsLoading(false);
+        if (isMounted && !hasLoaded) {
+          hasLoaded = true;
+          // Set empty assets object and continue
+          setSvgAssets({});
+          setIsLoading(false);
+        }
       }
     };
 
@@ -56,11 +75,18 @@ const App: React.FC = () => {
     
     // Fallback timeout in case loading takes too long
     const timeout = setTimeout(() => {
-      console.warn('SVG loading timeout, proceeding without assets');
-      setIsLoading(false);
-    }, 5000);
+      if (isMounted && !hasLoaded) {
+        hasLoaded = true;
+        console.warn('SVG loading timeout, proceeding without assets');
+        setSvgAssets({});
+        setIsLoading(false);
+      }
+    }, 3000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
   }, []);
 
   if (isLoading) {
