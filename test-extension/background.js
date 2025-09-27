@@ -47,21 +47,25 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 console.log("✅ Frame captured successfully!")
                 console.log("Image data length:", response.imageData.length)
                 
-                // Store image data for popup to access
+                // Store image data temporarily
                 chrome.storage.local.set({
                     lastCapturedImage: response.imageData,
                     lastDimensions: response.dimensions,
                     lastVideoInfo: response.videoInfo,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    analysisStatus: 'processing'
                 })
                 
-                // Show notification
+                // Show notification that analysis is starting
                 chrome.notifications.create({
                     type: 'basic',
                     iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-                    title: 'Instagram Reels Test',
-                    message: 'Frame captured! Click extension icon to see results.'
+                    title: 'Primer 2.0',
+                    message: 'Analyzing clothing... Please wait.'
                 })
+                
+                // Send image to backend for AI analysis
+                analyzeClothingWithAI(response.imageData, response.dimensions, response.videoInfo)
                 
             } else {
                 console.error("❌ Frame capture failed:", response)
@@ -70,10 +74,73 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 })
 
+// Function to analyze clothing with AI
+async function analyzeClothingWithAI(imageData, dimensions, videoInfo) {
+    try {
+        console.log("🤖 Sending image to AI for clothing analysis...")
+        
+        const response = await fetch('http://localhost:3001/analyze-clothing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                imageData: imageData
+            })
+        })
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const analysisResult = await response.json()
+        console.log("✅ AI analysis complete:", analysisResult)
+        
+        // Store complete results
+        chrome.storage.local.set({
+            lastCapturedImage: imageData,
+            lastDimensions: dimensions,
+            lastVideoInfo: videoInfo,
+            lastAnalysis: analysisResult,
+            timestamp: Date.now(),
+            analysisStatus: 'complete'
+        })
+        
+        // Show success notification
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+            title: 'Primer 2.0',
+            message: `Found ${analysisResult.items?.length || 0} clothing items! Click extension to see results.`
+        })
+        
+    } catch (error) {
+        console.error("❌ AI analysis failed:", error)
+        
+        // Store error state
+        chrome.storage.local.set({
+            lastCapturedImage: imageData,
+            lastDimensions: dimensions,
+            lastVideoInfo: videoInfo,
+            analysisError: error.message,
+            timestamp: Date.now(),
+            analysisStatus: 'error'
+        })
+        
+        // Show error notification
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+            title: 'Primer 2.0',
+            message: 'Analysis failed. Click extension for details.'
+        })
+    }
+}
+
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "getLastCapturedImage") {
-        chrome.storage.local.get(['lastCapturedImage', 'timestamp'], (result) => {
+        chrome.storage.local.get(['lastCapturedImage', 'lastAnalysis', 'analysisStatus', 'analysisError', 'timestamp'], (result) => {
             sendResponse(result)
         })
         return true // Keep message channel open
