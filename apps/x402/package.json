@@ -1,0 +1,23 @@
+{
+  "name": "quickstart-local",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:seller": "node seller.js",
+    "run:buyer": "node buyer.js",
+    "test:endpoints": "node test_endpoints.js"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "body-parser": "^2.2.0",
+    "dotenv": "^17.2.2",
+    "ethers": "^6.15.0",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2",
+    "viem": "^2.37.8",
+    "x402": "^0.6.5",
+    "x402-express": "^0.6.5",
+    "x402-fetch": "^0.6.0"
+  }
+}
