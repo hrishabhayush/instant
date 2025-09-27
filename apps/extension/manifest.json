@@ -6,6 +6,7 @@
     "permissions": ["activeTab", "storage", "scripting", "notifications", "tabs", "contextMenus"],
     "host_permissions": [
         "https://www.amazon.com/*",
+        "https://www.amazon.in/*",
         "https://www.amazon.co.uk/*",
         "https://www.amazon.ca/*",
         "https://www.amazon.de/*",
@@ -13,7 +14,6 @@
         "https://www.amazon.it/*",
         "https://www.amazon.es/*",
         "https://www.amazon.com.au/*",
-        "https://www.amazon.in/*",
         "https://www.amazon.co.jp/*",
         "https://www.amazon.com.br/*",
         "https://www.amazon.com.mx/*",
@@ -24,8 +24,8 @@
     },
     "content_scripts": [{
         "matches": [
-            "https://www.amazon.in/*",
             "https://www.amazon.com/*",
+            "https://www.amazon.in/*",
             "https://www.amazon.co.uk/*",
             "https://www.amazon.ca/*",
             "https://www.amazon.de/*",
@@ -38,11 +38,15 @@
             "https://www.amazon.com.mx/*",
             "https://www.instagram.com/*"
         ],
-        "js": ["content.js"],
+        "js": ["amazon-gift-card.js", "content.js"],
         "run_at": "document_end"
     }],
     "action": {
         "default_popup": "popup.html",
         "default_title": "Primer 2.0 - Crypto Payments"
-    }
+    },
+    "web_accessible_resources": [{
+        "resources": ["amazon-gift-card.js"],
+        "matches": ["<all_urls>"]
+    }]
 }

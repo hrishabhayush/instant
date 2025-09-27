@@ -1,6 +1,10 @@
 // Primer 2.0 - Amazon Automation Content Script
 console.log("🚀 Primer 2.0 content script injected on Amazon!")
 
+// Import Amazon Gift Card functionality
+// The module is now loaded directly via manifest.json
+let AmazonGiftCard = window.AmazonGiftCard || null;
+
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("📨 Message received:", request)
@@ -30,6 +34,53 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             })
         })
         return true // Keep the message channel open for async response
+    } else if (request.action === "generateGiftCard") {
+        console.log("🎁 Generating new gift card...")
+        generateAndApplyGiftCard().then(result => {
+        sendResponse(result)
+        }).catch(error => {
+            sendResponse({
+                success: false,
+                error: error.message
+            })
+        })
+        return true // Keep the message channel open for async response
+    } else if (request.action === "setAmazonCredentials") {
+        console.log("🔑 Setting Amazon API credentials...")
+        if (window.AmazonGiftCard && window.AmazonGiftCard.setCredentials) {
+            window.AmazonGiftCard.setCredentials(request.partnerId, request.accessKey, request.secretKey).then(result => {
+                sendResponse(result)
+            }).catch(error => {
+                sendResponse({
+                    success: false,
+                    error: error.message
+                })
+            })
+        } else {
+            sendResponse({
+                success: false,
+                error: "Amazon Gift Card module not available"
+            })
+        }
+        return true
+    } else if (request.action === "testAmazonConnection") {
+        console.log("🧪 Testing Amazon API connection...")
+        if (window.AmazonGiftCard && window.AmazonGiftCard.testConnection) {
+            window.AmazonGiftCard.testConnection().then(result => {
+                sendResponse(result)
+            }).catch(error => {
+                sendResponse({
+                    success: false,
+                    error: error.message
+                })
+            })
+        } else {
+            sendResponse({
+                success: false,
+                error: "Amazon Gift Card module not available"
+            })
+        }
+        return true
     }
 })
 
@@ -40,7 +91,7 @@ async function addItemsToCart() {
         console.log("Current URL:", window.location.href)
         
         // Check if we're on Amazon product page
-        if (!window.location.href.includes('amazon.in')) {
+        if (!window.location.href.includes('amazon.com') && !window.location.href.includes('amazon.in')) {
             console.log("❌ Not on Amazon website")
             return {
                 success: false,
@@ -50,7 +101,7 @@ async function addItemsToCart() {
         
         // Wait a bit for the page to fully load
         console.log("⏳ Waiting for page to load...")
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, 2000))
         
         // Wait for the specific button to be visible
         console.log("🔍 Waiting for add-to-cart button to be visible...")
@@ -484,7 +535,7 @@ async function clickContinueButton() {
         
         // Wait a bit for the page to fully load
         console.log("⏳ Waiting for page to load...")
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, 2000))
         
         // Look for the continue button
         const continueButton = findContinueButton()
@@ -624,13 +675,13 @@ function findContinueButton() {
 }
 
 // Function to apply gift card
-async function applyGiftCard(giftCardCode = "TESTGIFT123") {
+async function applyGiftCard(giftCardCode) {
     try {
         console.log("🎁 Applying gift card:", giftCardCode)
         console.log("Current URL:", window.location.href)
         
         // Check if we're on Amazon checkout/payment page
-        if (!window.location.href.includes('amazon.in') && !window.location.href.includes('amazon.com')) {
+        if (!window.location.href.includes('amazon.com') && !window.location.href.includes('amazon.in')) {
             console.log("❌ Not on Amazon website")
             return {
                 success: false,
@@ -669,7 +720,7 @@ async function applyGiftCard(giftCardCode = "TESTGIFT123") {
         console.log("✅ Gift card code entered:", giftCardCode)
         
         // Wait a moment for the input to be processed
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 3000))
         
         // Look for and click the apply button
         const applyButton = findGiftCardApplyButton()
@@ -685,7 +736,7 @@ async function applyGiftCard(giftCardCode = "TESTGIFT123") {
         
         // Scroll to button to make sure it's visible
         applyButton.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 2000))
         
         // Try multiple click methods for reliability
         let clicked = false
@@ -844,7 +895,8 @@ async function autoApplyGiftCard() {
     console.log("🤖 Auto-apply gift card triggered!")
     
     try {
-        const result = await applyGiftCard()
+        // Generate a real gift card first, then apply it
+        const result = await generateAndApplyGiftCard() // Fixed $0.01 amount
         if (result.success) {
             console.log("🎉 Auto-apply gift card successful!")
         } else {
@@ -854,6 +906,129 @@ async function autoApplyGiftCard() {
         console.error("❌ Auto-apply gift card error:", error)
     }
 }
+
+// Function to generate and apply a new gift card
+async function generateAndApplyGiftCard() {
+    try {
+        console.log("🎁 Generating new Amazon gift card...")
+        console.log("⚠️ WARNING: This will create a REAL gift card with REAL money!")
+        
+        // Fixed amount for automation - always $0.01
+        const amount = 0.01
+        
+        // Call the backend API to generate the gift card
+        console.log(`💰 Creating gift card for $${amount} via backend API...`)
+        const giftCardResult = await generateGiftCardViaBackend(amount)
+        
+        if (!giftCardResult.success) {
+            console.error("❌ Failed to generate gift card:", giftCardResult.error)
+            console.log("⚠️ Falling back to manual gift card code...")
+            
+            // Fallback: Ask user to provide a gift card code
+            const manualCode = prompt("Gift card generation failed. Please enter a valid gift card code manually:", "")
+            if (!manualCode || manualCode.trim() === "") {
+                return {
+                    success: false,
+                    error: `Failed to generate gift card: ${giftCardResult.error}. No manual code provided.`
+                }
+            }
+            
+            // Use the manual code
+            console.log("🔄 Using manual gift card code...")
+            const applyResult = await applyGiftCard(manualCode.trim())
+            
+            if (applyResult.success) {
+                return {
+                    success: true,
+                    message: "Manual gift card applied successfully",
+                    claimCode: manualCode.trim(),
+                    amount: amount,
+                    manual: true
+                }
+            } else {
+                return {
+                    success: false,
+                    error: `Manual gift card application failed: ${applyResult.error}`
+                }
+            }
+        }
+        
+        console.log("✅ Gift card generated successfully!")
+        console.log(`🎫 Claim Code: ${giftCardResult.claimCode}`)
+        
+        // Now apply the gift card to the current page
+        console.log("🔄 Applying gift card to checkout page...")
+        const applyResult = await applyGiftCard(giftCardResult.claimCode)
+        
+        if (applyResult.success) {
+            console.log("🎉 Gift card generated and applied successfully!")
+            return {
+                success: true,
+                message: "Gift card generated and applied successfully",
+                claimCode: giftCardResult.claimCode,
+                amount: giftCardResult.amount,
+                gcId: giftCardResult.gcId
+            }
+        } else {
+            console.log("⚠️ Gift card generated but failed to apply:", applyResult.error)
+            return {
+                success: false,
+                error: `Gift card generated but failed to apply: ${applyResult.error}`,
+                claimCode: giftCardResult.claimCode,
+                amount: giftCardResult.amount,
+                gcId: giftCardResult.gcId
+            }
+        }
+        
+    } catch (error) {
+        console.error("❌ Error in generateAndApplyGiftCard:", error)
+        return {
+            success: false,
+            error: error.message
+        }
+    }
+}
+
+// Function to generate gift card via backend API
+async function generateGiftCardViaBackend(amount) {
+    try {
+        console.log(`🌐 Calling backend API to create gift card for $${amount}...`)
+        
+        // Backend API endpoint (update this to match your backend URL)
+        const backendUrl = 'http://localhost:3001'
+        
+        const response = await fetch(`${backendUrl}/api/gift-card/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}) // No amount needed, backend uses fixed $0.01
+        })
+        
+        const result = await response.json()
+        
+        if (response.ok && result.success) {
+            console.log('✅ Backend API gift card creation successful!')
+            console.log(`🎫 Claim Code: ${result.claimCode}`)
+            return result
+        } else {
+            console.error('❌ Backend API gift card creation failed:', result.error)
+            return {
+                success: false,
+                error: result.error || 'Backend API request failed'
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Error calling backend API:', error)
+        return {
+            success: false,
+            error: `Backend API error: ${error.message}`
+        }
+    }
+}
+
+// Amazon Gift Card module is now loaded directly via manifest.json
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
