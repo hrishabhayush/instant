@@ -19,6 +19,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             })
         })
         return true // Keep the message channel open for async response
+    } else if (request.action === "applyGiftCard") {
+        console.log("🎁 Applying gift card...")
+        applyGiftCard(request.giftCardCode).then(result => {
+        sendResponse(result)
+        }).catch(error => {
+            sendResponse({
+                success: false,
+                error: error.message
+            })
+        })
+        return true // Keep the message channel open for async response
     }
 })
 
@@ -230,13 +241,13 @@ function initializeContentScript() {
             setTimeout(() => {
                 console.log("⏰ 3 seconds passed, triggering auto-add to cart...")
                 autoAddToCart()
-            }, 3000)
+            }, 2000)
             
             // Backup trigger after 8 seconds in case first attempt fails
             setTimeout(() => {
                 console.log("⏰ 8 seconds passed, backup auto-add to cart...")
                 autoAddToCart()
-            }, 8000)
+            }, 2000)
             
         } else if (isCartPage) {
             console.log("🛒 Cart page detected, auto-proceeding to checkout...")
@@ -246,7 +257,7 @@ function initializeContentScript() {
             setTimeout(() => {
                 console.log("⏰ 3 seconds passed, triggering proceed to checkout...")
                 proceedToCheckout()
-            }, 3000)
+            }, 2000)
             
         } else if (isCheckoutPage) {
             console.log("💳 Checkout page detected, auto-continuing...")
@@ -256,7 +267,13 @@ function initializeContentScript() {
             setTimeout(() => {
                 console.log("⏰ 3 seconds passed, triggering continue checkout...")
                 continueCheckout()
-            }, 3000)
+            }, 2000)
+            
+            // Auto-apply gift card after 8 seconds (in case gift card section is available)
+            setTimeout(() => {
+                console.log("⏰ 8 seconds passed, checking for gift card section...")
+                autoApplyGiftCard()
+            }, 8000)
             
         } else {
             console.log("ℹ️ Not a product, cart, or checkout page, no auto-action")
@@ -307,7 +324,7 @@ async function clickProceedToCheckout() {
         
         // Wait a bit for the page to fully load
         console.log("⏳ Waiting for page to load...")
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, 2000))
         
         // Look for the proceed to checkout button
         const checkoutButton = findProceedToCheckoutButton()
@@ -604,6 +621,238 @@ function findContinueButton() {
     
     console.log("❌ No continue button found")
     return null
+}
+
+// Function to apply gift card
+async function applyGiftCard(giftCardCode = "TESTGIFT123") {
+    try {
+        console.log("🎁 Applying gift card:", giftCardCode)
+        console.log("Current URL:", window.location.href)
+        
+        // Check if we're on Amazon checkout/payment page
+        if (!window.location.href.includes('amazon.in') && !window.location.href.includes('amazon.com')) {
+            console.log("❌ Not on Amazon website")
+            return {
+                success: false,
+                error: "Not on Amazon website"
+            }
+        }
+        
+        // Wait a bit for the page to fully load
+        console.log("⏳ Waiting for page to load...")
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Look for the gift card input field
+        const giftCardInput = findGiftCardInput()
+        if (!giftCardInput) {
+            console.log("❌ Gift card input field not found")
+            return {
+                success: false,
+                error: "Gift card input field not found"
+            }
+        }
+        
+        console.log("✅ Found gift card input field, entering code...")
+        
+        // Clear any existing value and enter the gift card code
+        giftCardInput.value = ''
+        giftCardInput.focus()
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Type the gift card code
+        giftCardInput.value = giftCardCode
+        
+        // Trigger input events to simulate user typing
+        giftCardInput.dispatchEvent(new Event('input', { bubbles: true }))
+        giftCardInput.dispatchEvent(new Event('change', { bubbles: true }))
+        
+        console.log("✅ Gift card code entered:", giftCardCode)
+        
+        // Wait a moment for the input to be processed
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Look for and click the apply button
+        const applyButton = findGiftCardApplyButton()
+        if (!applyButton) {
+            console.log("❌ Apply button not found")
+            return {
+                success: false,
+                error: "Apply button not found"
+            }
+        }
+        
+        console.log("✅ Found apply button, clicking...")
+        
+        // Scroll to button to make sure it's visible
+        applyButton.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Try multiple click methods for reliability
+        let clicked = false
+        
+        // Method 1: Direct click
+        try {
+            applyButton.click()
+            clicked = true
+            console.log("✅ Direct click successful")
+        } catch (error) {
+            console.log("⚠️ Direct click failed:", error.message)
+        }
+        
+        // Method 2: Event dispatch if direct click failed
+        if (!clicked) {
+            try {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                })
+                applyButton.dispatchEvent(clickEvent)
+                clicked = true
+                console.log("✅ Event dispatch successful")
+            } catch (error) {
+                console.log("⚠️ Event dispatch failed:", error.message)
+            }
+        }
+        
+        // Method 3: Form submission if it's a form button
+        if (!clicked && applyButton.form) {
+            try {
+                applyButton.form.submit()
+                clicked = true
+                console.log("✅ Form submission successful")
+            } catch (error) {
+                console.log("⚠️ Form submission failed:", error.message)
+            }
+        }
+        
+        if (!clicked) {
+            console.log("❌ All click methods failed")
+            return {
+                success: false,
+                error: "Could not click apply button"
+            }
+        }
+        
+        // Wait a moment for the action to complete
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        console.log("✅ Gift card applied successfully!")
+        return {
+            success: true,
+            message: "Gift card applied successfully"
+        }
+        
+    } catch (error) {
+        console.error("❌ Error applying gift card:", error)
+        return {
+            success: false,
+            error: error.message
+        }
+    }
+}
+
+// Function to find the gift card input field
+function findGiftCardInput() {
+    console.log("🔍 Searching for gift card input field...")
+    
+    // List of possible selectors for gift card input field
+    const selectors = [
+        'input[name="ppw-claimCode"]',
+        'input[placeholder*="Enter Code"]',
+        'input[placeholder*="Enter code"]',
+        'input[class*="pmts-claim-code"]',
+        'input[class*="claim-code"]',
+        'input[id*="claimCode"]',
+        'input[autocomplete="off"][maxlength="25"]',
+        'input[type="text"][maxlength="25"]'
+    ]
+    
+    // Try each selector
+    for (const selector of selectors) {
+        const input = document.querySelector(selector)
+        if (input) {
+            console.log(`✅ Found input with selector: ${selector}`)
+            console.log("Input details:", {
+                tagName: input.tagName,
+                type: input.type,
+                name: input.name,
+                placeholder: input.placeholder,
+                className: input.className,
+                id: input.id,
+                maxLength: input.maxLength
+            })
+            return input
+        }
+    }
+    
+    console.log("❌ No gift card input field found")
+    return null
+}
+
+// Function to find the gift card apply button
+function findGiftCardApplyButton() {
+    console.log("🔍 Searching for gift card apply button...")
+    
+    // List of possible selectors for apply button
+    const selectors = [
+        'input[name="ppw-claimCodeApplyPressed"]',
+        'input[class*="pmts-claim-code-apply-button"]',
+        'input[value*="Apply"]',
+        'input[value*="apply"]',
+        'input[type="submit"][class*="claim-code"]',
+        'span[class*="pmts-claim-code-apply-button"] input',
+        'input[class*="pmts-button-input"]'
+    ]
+    
+    // Try each selector
+    for (const selector of selectors) {
+        const button = document.querySelector(selector)
+        if (button) {
+            console.log(`✅ Found button with selector: ${selector}`)
+            console.log("Button details:", {
+                tagName: button.tagName,
+                type: button.type,
+                value: button.value,
+                name: button.name,
+                className: button.className,
+                id: button.id
+            })
+            return button
+        }
+    }
+    
+    // If no specific selector worked, search by text content in spans
+    console.log("🔍 Searching by text content in spans...")
+    const allSpans = document.querySelectorAll('span')
+    
+    for (const span of allSpans) {
+        const text = span.textContent || ''
+        if (text.toLowerCase().includes('apply') && span.querySelector('input[type="submit"]')) {
+            const input = span.querySelector('input[type="submit"]')
+            console.log(`✅ Found button by text: "${text}"`)
+            return input
+        }
+    }
+    
+    console.log("❌ No gift card apply button found")
+    return null
+}
+
+// Auto apply gift card function
+async function autoApplyGiftCard() {
+    console.log("🤖 Auto-apply gift card triggered!")
+    
+    try {
+        const result = await applyGiftCard()
+        if (result.success) {
+            console.log("🎉 Auto-apply gift card successful!")
+        } else {
+            console.log("❌ Auto-apply gift card failed:", result.error)
+        }
+    } catch (error) {
+        console.error("❌ Auto-apply gift card error:", error)
+    }
 }
 
 // Initialize when DOM is ready
