@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 
@@ -10,51 +10,139 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ svgAssets }) =>
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
 
-  // Mock product data - in a real app, this would come from state or API
+  // Mock product data with multiple sources for each product type
   const getProductData = (id: string) => {
-    const products: { [key: string]: any } = {
-      'white-vest': {
-        title: 'White Vest',
-        description: 'Cotton, medium sized ....',
-        price: '$17.56',
-        source: 'Amazon',
-        image: 'Product Image'
-      },
-      'blue-jeans': {
-        title: 'Blue Jeans',
-        description: 'Denim, size large ....',
-        price: '$49.99',
-        source: 'Levi\'s',
-        image: 'Product Image'
-      },
-      'red-shirt': {
-        title: 'Red Shirt',
-        description: 'Polyester, small size ....',
-        price: '$19.99',
-        source: 'H&M',
-        image: 'Product Image'
-      }
+    const productVariants: { [key: string]: any[] } = {
+      'white-vest': [
+        {
+          title: 'White Vest',
+          description: 'Cotton, medium sized ....',
+          price: '$17.56',
+          source: 'Amazon',
+          image: 'Product Image'
+        },
+        {
+          title: 'White Tank Top',
+          description: 'Cotton blend, medium ....',
+          price: '$22.99',
+          source: 'H&M',
+          image: 'Product Image'
+        },
+        {
+          title: 'White Vest',
+          description: 'Premium cotton, M ....',
+          price: '$29.99',
+          source: 'Zara',
+          image: 'Product Image'
+        },
+        {
+          title: 'White Tank',
+          description: 'Organic cotton, M ....',
+          price: '$34.99',
+          source: 'Everlane',
+          image: 'Product Image'
+        }
+      ],
+      'blue-jeans': [
+        {
+          title: 'Blue Jeans',
+          description: 'Denim, size large ....',
+          price: '$49.99',
+          source: 'Levi\'s',
+          image: 'Product Image'
+        },
+        {
+          title: 'Blue Denim',
+          description: 'Classic fit, L ....',
+          price: '$59.99',
+          source: 'Gap',
+          image: 'Product Image'
+        },
+        {
+          title: 'Blue Jeans',
+          description: 'Slim fit, Large ....',
+          price: '$79.99',
+          source: 'Uniqlo',
+          image: 'Product Image'
+        }
+      ],
+      'red-shirt': [
+        {
+          title: 'Red Shirt',
+          description: 'Polyester, small size ....',
+          price: '$19.99',
+          source: 'H&M',
+          image: 'Product Image'
+        },
+        {
+          title: 'Red Tee',
+          description: 'Cotton, S ....',
+          price: '$24.99',
+          source: 'Target',
+          image: 'Product Image'
+        },
+        {
+          title: 'Red Shirt',
+          description: 'Premium cotton, S ....',
+          price: '$39.99',
+          source: 'J.Crew',
+          image: 'Product Image'
+        }
+      ]
     };
-    return products[id] || products['white-vest'];
+    return productVariants[id] || productVariants['white-vest'];
   };
 
-  const product = getProductData(productId || 'white-vest');
+  const productVariants = getProductData(productId || 'white-vest');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const currentProduct = productVariants[currentIndex];
+
+  // Loading state effect
+  useEffect(() => {
+    const loadingInterval = setInterval(() => {
+      setLoadingStep(prev => prev + 1);
+    }, 500);
+
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+      clearInterval(loadingInterval);
+    }, 1500);
+
+    return () => {
+      clearInterval(loadingInterval);
+      clearTimeout(loadingTimeout);
+    };
+  }, []);
+
+  // Handle scroll to update current index
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const scrollLeft = scrollContainerRef.current.scrollLeft;
+      const itemWidth = scrollContainerRef.current.clientWidth;
+      const newIndex = Math.round(scrollLeft / itemWidth);
+      setCurrentIndex(newIndex);
+    }
+  };
 
   const handlePurchase = () => {
     // In a real app, this would handle the purchase flow
-    console.log('Purchase initiated for:', product.title);
+    console.log('Purchase initiated for:', currentProduct.title);
   };
 
-  const handleLike = () => {
-    console.log('Liked:', product.title);
+  const handleBack = () => {
+    navigate('/');
   };
 
   const handleShare = () => {
-    console.log('Shared:', product.title);
+    console.log('Shared:', currentProduct.title);
   };
 
   const handleSave = () => {
-    console.log('Saved:', product.title);
+    console.log('Saved:', currentProduct.title);
   };
 
   return (
@@ -70,6 +158,12 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ svgAssets }) =>
       padding: 0,
       overflow: 'hidden',
     }}>
+      <style>{`
+        /* Hide scrollbar for horizontal scroll */
+        div::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Header */}
       <Header svgAssets={svgAssets} />
 
@@ -93,10 +187,10 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ svgAssets }) =>
           </div>
           <div>
             <div style={{ fontSize: '16px', fontWeight: 600, color: 'white' }}>
-              {product.title}
+              {isLoading ? 'Searching...' : 'Found it!'}
             </div>
             <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-              Here's something similar for you to try!
+              {isLoading ? '....' : 'Here\'s something similar for you to try!'}
             </div>
           </div>
         </div>
@@ -116,106 +210,210 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ svgAssets }) =>
         </div>
       </div>
 
-      {/* Main Product Image */}
-      <div style={{
-        flex: 1,
-        position: 'relative',
-        background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
-        margin: '0 20px',
-        borderRadius: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-      }}>
-        {/* Placeholder for product image */}
+      {/* Main Product Area */}
+      {isLoading ? (
         <div style={{
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%)',
+          flex: 1,
+          margin: '0 20px',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#666',
-          fontSize: '16px',
-          fontWeight: 500,
+          gap: '16px',
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          paddingBottom: '8px',
         }}>
-          Product Image
-        </div>
-        
-        {/* Product Info Overlay */}
-        <div style={{
-          position: 'absolute',
-          bottom: '16px',
-          left: '16px',
-          right: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-        }}>
-          <div>
-            <div style={{ 
-              fontSize: '18px', 
-              fontWeight: 600, 
-              color: 'white',
-              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-              marginBottom: '4px'
+          <div style={{
+            minWidth: 'calc(100% - 8px)',
+            height: '100%',
+            position: 'relative',
+            background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '16px',
+            flexShrink: 0,
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '3px solid rgba(0,0,0,0.1)',
+              borderTop: '3px solid #4A9EFF',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}></div>
+            <div style={{
+              color: '#666',
+              fontSize: '16px',
+              fontWeight: 500,
+              textAlign: 'center',
             }}>
-              {product.title}
+              Finding similar products...
             </div>
-            <div style={{ 
-              fontSize: '14px', 
-              color: 'rgba(255, 255, 255, 0.8)',
-              textShadow: '0 1px 3px rgba(0,0,0,0.5)'
-            }}>
-              {product.description}
-            </div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ 
-              fontSize: '18px', 
-              fontWeight: 600, 
-              color: 'white',
-              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-              marginBottom: '4px'
-            }}>
-              {product.price}
-            </div>
-            <div style={{ 
-              fontSize: '14px', 
-              color: 'rgba(255, 255, 255, 0.8)',
-              textShadow: '0 1px 3px rgba(0,0,0,0.5)'
-            }}>
-              From {product.source}
-            </div>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
           </div>
         </div>
-      </div>
-
-      {/* Bottom Action Bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '20px',
-        flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <div 
-            onClick={handleLike}
-            style={{ 
-              cursor: 'pointer',
+      ) : (
+        /* Horizontal Scrollable Product Images */
+        <div 
+          ref={scrollContainerRef}
+          style={{
+            flex: 1,
+            margin: '0 20px',
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            display: 'flex',
+            gap: '16px',
+            scrollSnapType: 'x mandatory',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            paddingBottom: '8px',
+          }}
+          onScroll={handleScroll}
+        >
+        {productVariants.map((product, index) => (
+          <div
+            key={index}
+            style={{
+              minWidth: 'calc(100% - 8px)',
+              height: '100%',
+              position: 'relative',
+              background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '24px',
-              height: '24px',
+              overflow: 'hidden',
+              scrollSnapAlign: 'start',
+              flexShrink: 0,
             }}
           >
-            <svg width="20" height="18" viewBox="0 0 20 18" fill="none" stroke="white" strokeWidth="1.5">
-              <path d="M14.5 1.5C17.5 1.5 20 4 20 7C20 14 10 18 10 18S0 14 0 7C0 4 2.5 1.5 5.5 1.5C7.36 1.5 9 2.64 10 4.34C11 2.64 12.64 1.5 14.5 1.5Z"/>
-            </svg>
+            {/* Placeholder for product image */}
+            <div style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#666',
+              fontSize: '16px',
+              fontWeight: 500,
+              borderRadius: '8px',
+            }}>
+              Product Image
+            </div>
+            
+            {/* Product Info Overlay */}
+            <div style={{
+              position: 'absolute',
+              bottom: '16px',
+              left: '16px',
+              right: '16px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+            }}>
+              <div>
+                <div style={{ 
+                  fontSize: '18px', 
+                  fontWeight: 600, 
+                  color: 'white',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                  marginBottom: '4px'
+                }}>
+                  {product.title}
+                </div>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.5)'
+                }}>
+                  {product.description}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ 
+                  fontSize: '18px', 
+                  fontWeight: 600, 
+                  color: 'white',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                  marginBottom: '4px'
+                }}>
+                  {product.price}
+                </div>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.5)'
+                }}>
+                  From {product.source}
+                </div>
+              </div>
+            </div>
           </div>
+        ))}
+        </div>
+      )}
+
+      {/* Swipe Indicators - Only show when not loading */}
+      {!isLoading && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '8px',
+          padding: '10px 0',
+          flexShrink: 0,
+        }}>
+          {productVariants.map((_, index) => (
+            <div
+              key={index}
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: index === currentIndex ? '#4A9EFF' : 'rgba(255, 255, 255, 0.3)',
+                transition: 'background 0.3s ease',
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Bottom Action Bar - Only show when not loading */}
+      {!isLoading && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '20px',
+          flexShrink: 0,
+        }}>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <button 
+            onClick={handleBack}
+            style={{
+              background: 'transparent',
+              color: 'white',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Back
+          </button>
           <div 
             onClick={handleShare}
             style={{ 
@@ -267,7 +465,8 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ svgAssets }) =>
         >
           Purchase
         </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

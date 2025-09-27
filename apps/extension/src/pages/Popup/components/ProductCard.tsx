@@ -14,7 +14,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ title, description, time, svg
       display: 'flex',
       background: 'rgba(255, 255, 255, 0.1)',
       border: '1px solid rgba(255, 255, 255, 0.2)',
-      borderRadius: '24px',
+      borderRadius: '4px',
       overflow: 'hidden',
       backdropFilter: 'blur(20px)',
       minHeight: '80px',
@@ -31,12 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ title, description, time, svg
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ cursor: 'pointer' }}>
-            <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
-              <path d="M14.5 1.5C17.5 1.5 20 4 20 7C20 14 10 18 10 18S0 14 0 7C0 4 2.5 1.5 5.5 1.5C7.36 1.5 9 2.64 10 4.34C11 2.64 12.64 1.5 14.5 1.5Z" stroke="white" strokeWidth="1.5" fill="none"/>
-            </svg>
-          </div>
-          <div style={{ cursor: 'pointer' }} dangerouslySetInnerHTML={{ __html: svgAssets.ssav || '' }} />
+          <div style={{ cursor: 'pointer', width: '18px', height: '16px' }} dangerouslySetInnerHTML={{ __html: svgAssets.vector || '' }} />
           <div style={{ cursor: 'pointer' }} dangerouslySetInnerHTML={{ __html: svgAssets.msg || '' }} />
         </div>
         <button 
