@@ -14,7 +14,7 @@ Starting the chrome extension
 
 ```bash
 cd apps/extension
-pnpm build
+npm run build
 ```
 
 # Most of the file that contains the first UI would be inside popup.html
