@@ -14,7 +14,13 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Primer Extension"
+    "default_title": "Primer Extension",
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   },
   "background": {
     "service_worker": "background.bundle.js"
@@ -24,6 +30,12 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.bundle.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/assets/sources/svgs/*.svg"],
+      "matches": ["<all_urls>"]
     }
   ]
 }

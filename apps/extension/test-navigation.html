@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Navigation Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-button {
+            background: #4A9EFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #3A8EEF;
+        }
+        .test-button.secondary {
+            background: #6c757d;
+        }
+        .test-button.secondary:hover {
+            background: #5a6268;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .extension-frame {
+            width: 375px;
+            height: 600px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin: 20px auto;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚀 Chrome Extension Multi-Page Navigation Test</h1>
+        
+        <div class="test-section">
+            <h3>📋 Test Overview</h3>
+            <p>This test verifies that your Chrome extension now supports MetaMask-style multi-page navigation:</p>
+            <ul>
+                <li><strong>Home Page:</strong> Main product listing view</li>
+                <li><strong>Product Details:</strong> Individual product view with back navigation</li>
+                <li><strong>Settings:</strong> Configuration page with back navigation</li>
+                <li><strong>Client-side Routing:</strong> No page reloads, smooth transitions</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Installation Instructions</h3>
+            <ol>
+                <li>Open Chrome and go to <code>chrome://extensions/</code></li>
+                <li>Enable "Developer mode" (toggle in top right)</li>
+                <li>Click "Load unpacked" and select the <code>dist</code> folder</li>
+                <li>Pin the extension to your toolbar</li>
+                <li>Click the extension icon to test navigation</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Navigation Tests</h3>
+            <p>Test these navigation flows in your extension:</p>
+            
+            <h4>1. Home → Product Details</h4>
+            <button class="test-button" onclick="testProductNavigation()">Test Product Navigation</button>
+            <div id="product-test-status" class="status" style="display: none;"></div>
+            
+            <h4>2. Home → Settings</h4>
+            <button class="test-button" onclick="testSettingsNavigation()">Test Settings Navigation</button>
+            <div id="settings-test-status" class="status" style="display: none;"></div>
+            
+            <h4>3. Back Navigation</h4>
+            <button class="test-button" onclick="testBackNavigation()">Test Back Navigation</button>
+            <div id="back-test-status" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✨ Expected Behavior</h3>
+            <ul>
+                <li>✅ Clicking "Show More" on any product should navigate to product details</li>
+                <li>✅ Clicking the settings icon (add icon) should navigate to settings page</li>
+                <li>✅ "← Back" buttons should return to the previous page</li>
+                <li>✅ No page reloads or white flashes during navigation</li>
+                <li>✅ URL should change in browser address bar (if visible)</li>
+                <li>✅ Browser back/forward buttons should work</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 MetaMask-Style Features Implemented</h3>
+            <ul>
+                <li><strong>Single-Page Application (SPA):</strong> ✅ React Router for client-side navigation</li>
+                <li><strong>Multiple Views:</strong> ✅ Home, Product Details, Settings pages</li>
+                <li><strong>Smooth Transitions:</strong> ✅ No page reloads, instant navigation</li>
+                <li><strong>Back Navigation:</strong> ✅ Consistent back button behavior</li>
+                <li><strong>State Management:</strong> ✅ Shared SVG assets across all pages</li>
+                <li><strong>Extension Architecture:</strong> ✅ Proper Chrome extension structure</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>📁 File Structure</h3>
+            <pre style="background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto;">
+src/pages/Popup/
+├── App.tsx                 # Main router component
+├── Popup.tsx              # Entry point component
+├── index.tsx              # React DOM entry point
+├── pages/
+│   ├── HomePage.tsx       # Main product listing
+│   ├── ProductDetailsPage.tsx  # Individual product view
+│   └── SettingsPage.tsx   # Settings configuration
+└── components/
+    ├── Header.tsx         # Navigation header
+    ├── ProductCard.tsx    # Product card with navigation
+    ├── Notification.tsx   # Status notifications
+    └── BottomSection.tsx  # Footer section
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        function testProductNavigation() {
+            const status = document.getElementById('product-test-status');
+            status.style.display = 'block';
+            status.className = 'status success';
+            status.textContent = '✅ Test: Click "Show More" on any product card in the extension popup. You should navigate to a detailed product view with a back button.';
+        }
+
+        function testSettingsNavigation() {
+            const status = document.getElementById('settings-test-status');
+            status.style.display = 'block';
+            status.className = 'status success';
+            status.textContent = '✅ Test: Click the settings icon (add icon) in the header. You should navigate to a settings page with configuration options and a back button.';
+        }
+
+        function testBackNavigation() {
+            const status = document.getElementById('back-test-status');
+            status.style.display = 'block';
+            status.className = 'status success';
+            status.textContent = '✅ Test: From any sub-page, click the "← Back" button. You should return to the home page without any page reload.';
+        }
+    </script>
+</body>
+</html>

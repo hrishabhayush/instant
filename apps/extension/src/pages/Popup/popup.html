@@ -4,50 +4,18 @@
   <meta charset="utf-8">
   <style>
     body {
-      width: 300px;
-      height: 400px;
+      width: 375px;
+      height: 600px;
       margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0;
+      background: #000000;
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    }
-    h1 {
-      margin: 0 0 20px 0;
-      font-size: 18px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .content {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .status {
-      background: rgba(76, 175, 80, 0.2);
-      border: 1px solid #4CAF50;
-      padding: 10px;
-      border-radius: 6px;
-      margin: 10px 0;
-    }
-    .info {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-top: 15px;
     }
   </style>
 </head>
 <body>
-  <h1>Primer</h1>
-  <div class="content">
-    <h2>Hello World!</h2>
-    <div class="status">
-      ✅ Extension is working!
-    </div>
-    <p class="info">
-      This is a simple Chrome extension built with React and TypeScript.
-    </p>
-  </div>
+  <div id="root"></div>
+  <!-- Webpack will inject the script tag here -->
 </body>
 </html>

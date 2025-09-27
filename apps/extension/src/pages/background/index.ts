@@ -30,6 +30,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       tabId: sender.tab?.id
     });
   }
+  
+  if (request.action === 'instantCapture') {
+    console.log('Instant capture triggered:', request);
+    
+    // Update badge to show capture
+    chrome.action.setBadgeText({
+      text: '📸',
+      tabId: sender.tab?.id
+    });
+    
+    // Clear badge after 3 seconds
+    setTimeout(() => {
+      chrome.action.setBadgeText({
+        text: '',
+        tabId: sender.tab?.id
+      });
+    }, 3000);
+    
+    // Store capture data
+    chrome.storage.local.set({
+      lastCapture: {
+        url: request.url,
+        timestamp: request.timestamp,
+        tabId: sender.tab?.id
+      }
+    });
+  }
 });
 
 // Listen for tab updates
