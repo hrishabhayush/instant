@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     // Create context menu for videos and all contexts
     chrome.contextMenus.create({
         id: "findSimilarProducts",
-        title: "Instant this reel",
+        title: "Instant this Reel",
         contexts: ["video", "page"],
         documentUrlPatterns: ["https://www.instagram.com/*"]
     })
