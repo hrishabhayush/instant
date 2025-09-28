@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const fetch = require('node-fetch');
-const dotenv = require('dotenv');
+import crypto from 'crypto';
+// Using built-in fetch (Node.js 18+)
+import dotenv from 'dotenv';
 
 dotenv.config({ quiet: true });
 
@@ -241,4 +241,4 @@ async function cancelGiftCard(gcId, creationRequestId) {
     }
 }
 
-module.exports = { createGiftCard, cancelGiftCard };
+export { createGiftCard, cancelGiftCard };

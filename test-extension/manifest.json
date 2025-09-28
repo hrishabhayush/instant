@@ -1,0 +1,24 @@
+{
+    "manifest_version": 3,
+    "name": "Instant",
+    "version": "1.0",
+    "description": "Testing Instagram reels integration for Primer 2.0",
+    "permissions": ["contextMenus", "activeTab", "storage", "scripting", "notifications"],
+    "host_permissions": ["https://www.instagram.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Primer 2.0 - Instagram Clothing Analysis"
+  },
+    "content_scripts": [{
+        "matches": ["https://www.instagram.com/*"],
+        "js": ["content.js"],
+        "run_at": "document_end"
+    }],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Test Instagram Reels"
+    }
+}

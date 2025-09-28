@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+
     <title>Primer 2.0 - Crypto Payments</title>
     <style>
         body {
@@ -71,17 +72,60 @@
             cursor: not-allowed;
         }
         
-        .clear-button {
-            background: #f44336;
+        .clothing-menu {
+            margin: 10px 0;
         }
         
-        .clear-button:hover {
-            background: #da190b;
+        .clothing-option {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .clothing-option:hover {
+            background: rgba(139, 115, 85, 0.1);
+            border-color: #8b7355;
+            transform: translateY(-1px);
+        }
+        
+        .clothing-option h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #8b7355;
+            font-weight: 600;
+        }
+        
+        .clothing-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #8b7355;
+        }
+        
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .error-details {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="header">
+
         <h1>🚀 Primer 2.0</h1>
     </div>
     
@@ -89,8 +133,29 @@
         <p>Primer 2.0 ready! Visit any Amazon product page for automatic add to cart.</p>
     </div>
     
-    <button id="testButton" class="button">Test Add to Cart</button>
-    <button id="clearButton" class="button clear-button">Clear Status</button>
+    <div id="imageContainer" style="display: none;">
+        <h3>Captured Frame:</h3>
+        <img id="capturedImage" class="image-preview" />
+        <div id="imageInfo" class="info"></div>
+        
+        <div id="analysisContainer" style="display: none;">
+            <h3>What do you want to buy?</h3>
+            <div id="clothingMenu" class="clothing-menu"></div>
+        </div>
+        
+        <div id="loadingContainer" style="display: none;">
+            <p class="loading">🤖 Analyzing clothing with AI...</p>
+        </div>
+        
+        <div id="errorContainer" style="display: none;">
+            <p class="error">❌ Analysis failed</p>
+            <p id="errorMessage" class="error-details"></p>
+        </div>
+    </div>
+    
+    <button id="testButton" class="button">Test Frame Capture</button>
+    <button id="clearButton" class="button">Clear Results</button>
+
     
     <script src="popup.js"></script>
 </body>
