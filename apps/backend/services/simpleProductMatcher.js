@@ -1,5 +1,5 @@
 // Simple Product Matcher using OpenAI with structured prompt
-const OpenAI = require('openai');
+import OpenAI from 'openai';
 
 class SimpleProductMatcher {
     constructor() {
@@ -149,4 +149,4 @@ IMPORTANT: Use web search to find real, current products. Return only valid JSON
     }
 }
 
-module.exports = new SimpleProductMatcher();
+export default new SimpleProductMatcher();

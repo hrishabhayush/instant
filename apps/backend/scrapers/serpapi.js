@@ -1,4 +1,7 @@
-const axios = require('axios');
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config({ quiet: true });
 
 /**
  * SerpAPI scraper for real product data from Google Shopping, Amazon, etc.
@@ -45,7 +48,8 @@ async function scrapeSerpAPI(query) {
             console.log(`📊 SerpAPI response status: ${response.data.search_information?.shopping_results_state || 'unknown'}`);
             
             if (response.data.shopping_results && response.data.shopping_results.length > 0) {
-                console.log(`✅ Found ${response.data.shopping_results.length} products with query: ${searchQuery}`);
+                const processedProducts = processProducts(response.data.shopping_results);
+                console.log(`✅ Found ${response.data.shopping_results.length} total products, returning ${processedProducts.length} with query: ${searchQuery}`);
                 
                 // Debug: Check what fields are available in the first result
                 if (response.data.shopping_results.length > 0) {
@@ -53,7 +57,7 @@ async function scrapeSerpAPI(query) {
                     console.log("🔍 Debug - First product data:", JSON.stringify(response.data.shopping_results[0], null, 2));
                 }
                 
-                return processProducts(response.data.shopping_results);
+                return processedProducts;
             }
         }
         
@@ -393,7 +397,7 @@ async function testAmazonAPI() {
     }
 }
 
-module.exports = { 
+export { 
     scrapeSerpAPI, 
     scrapeAmazonSerpAPI, 
     scrapeMyntraSerpAPI,

@@ -1,13 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const OpenAI = require('openai');
-const simpleProductMatcher = require('./services/simpleProductMatcher');
-const { findSimilarProducts } = require('./matcher');
-const { testAmazonAPI } = require('./scrapers/serpapi');
-
-// Load environment variables
-dotenv.config();
+import express from 'express';
+import cors from "cors";
+import dotenv from 'dotenv';
+import OpenAI from 'openai';
+// import simpleProductMatcher from './services/simpleProductMatcher';
+import { findSimilarProducts } from './matcher.js';
+import { testAmazonAPI } from './scrapers/serpapi.js';
 
 // Validate required environment variables
 if (!process.env.OPENAI_API_KEY) {
@@ -16,6 +13,11 @@ if (!process.env.OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY=your_api_key_here');
     process.exit(1);
 }
+
+import { createGiftCard } from './amazon-gift-card.js';
+
+// Load environment variables
+dotenv.config({ quiet: true });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -263,6 +265,49 @@ app.post('/search-similar-products', async (req, res) => {
     }
 });
 
+/**
+ * Create Amazon Gift Card
+ * POST /api/gift-card/create
+ */
+app.post('/api/gift-card/create', async (req, res) => {
+    try {
+        // Fixed amount for automation - always $0.01
+        const amount = 0.01;
+        
+        console.log(`🎁 Creating Amazon gift card for $${amount} (automated)...`);
+        console.log('📤 Request body:', req.body); // Log for debugging
+        
+        // Create the gift card using the Amazon API
+        const result = await createGiftCard(amount);
+        
+        if (result.success) {
+            console.log('✅ Gift card created successfully:', result.claimCode);
+            res.json({
+                success: true,
+                claimCode: result.claimCode,
+                gcId: result.gcId,
+                amount: result.amount,
+                expirationDate: result.expirationDate,
+                creationRequestId: result.creationRequestId
+            });
+        } else {
+            console.error('❌ Gift card creation failed:', result.error);
+            res.status(400).json({
+                success: false,
+                error: result.error,
+                errorCode: result.errorCode
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Server error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Test endpoint for development
 app.post('/test-analysis', async (req, res) => {
     try {
@@ -325,20 +370,43 @@ app.get('/test-amazon-api', async (req, res) => {
     }
 });
 
+/**
+ * Test Amazon API connection
+ * GET /api/gift-card/test
+ */
+app.get('/api/gift-card/test', async (req, res) => {
+    try {
+        console.log('🧪 Testing Amazon API connection...');
+        
+        // Try to create a very small test gift card
+        const result = await createGiftCard(1);
+        
+        res.json(result);
+        
+    } catch (error) {
+        console.error('❌ Connection test failed:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(500).json({ 
-        error: 'Internal server error',
-        message: err.message
+    console.error('❌ Unhandled error:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Internal server error'
     });
 });
 
 // 404 handler
-app.use((req, res) => {
-    res.status(404).json({ 
-        error: 'Endpoint not found',
-        path: req.path
+
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'Endpoint not found'
     });
 });
 
@@ -350,7 +418,7 @@ app.listen(PORT, () => {
     console.log(`Product search: http://localhost:${PORT}/search-similar-products`);
     console.log(`Test endpoint: http://localhost:${PORT}/test-analysis`);
     console.log(`Amazon API test: http://localhost:${PORT}/test-amazon-api`);
-    
+    console.log(`🎁 Gift card API: http://localhost:${PORT}/api/gift-card/create`);
     if (!process.env.OPENAI_API_KEY) {
         console.log('WARNING: OPENAI_API_KEY not set. Create .env file with your OpenAI API key.');
     }
@@ -359,3 +427,5 @@ app.listen(PORT, () => {
         console.log('WARNING: SERPAPI_KEY not set. Create .env file with your SerpAPI key.');
     }
 });
+
+// Server is started directly, no export needed

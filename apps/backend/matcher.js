@@ -1,5 +1,5 @@
-const OpenAI = require('openai');
-const { scrapeSerpAPI, scrapeAmazonSerpAPI, resolveDirectLinks } = require('./scrapers/serpapi');
+import OpenAI from 'openai';
+import { scrapeSerpAPI, scrapeAmazonSerpAPI, resolveDirectLinks } from './scrapers/serpapi.js';
 
 /**
  * Finds similar products using Playwright scraping + OpenAI analysis
@@ -329,4 +329,4 @@ IMPORTANT:
     }
 }
 
-module.exports = { findSimilarProducts };
+export { findSimilarProducts };
