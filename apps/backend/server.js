@@ -29,29 +29,29 @@ const openai = new OpenAI({
 
 // Middleware
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
+    // origin: function (origin, callback) {
+    //     // Allow requests with no origin (like mobile apps or curl requests)
+    //     if (!origin) return callback(null, true);
         
-        // Allow Chrome extension origins (chrome-extension://)
-        if (origin.startsWith('chrome-extension://')) {
-            return callback(null, true);
-        }
+    //     // Allow Chrome extension origins (chrome-extension://)
+    //     if (origin.startsWith('chrome-extension://')) {
+    //         return callback(null, true);
+    //     }
         
-        // Allow localhost for development
-        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            return callback(null, true);
-        }
+    //     // Allow localhost for development
+    //     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    //         return callback(null, true);
+    //     }
         
-        // Allow other origins from environment variable
-        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
+    //     // Allow other origins from environment variable
+    //     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+    //     if (allowedOrigins.includes(origin)) {
+    //         return callback(null, true);
+    //     }
         
-        callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true
+    //     callback(new Error('Not allowed by CORS'));
+    // },
+    // credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

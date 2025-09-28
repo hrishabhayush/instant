@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     // Create context menu for videos and all contexts
     chrome.contextMenus.create({
         id: "findSimilarProducts",
-        title: "Find Similar Products",
+        title: "Instant this reel",
         contexts: ["video", "page"],
         documentUrlPatterns: ["https://www.instagram.com/*"]
     })
@@ -69,9 +69,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 // Show notification that analysis is starting
                 chrome.notifications.create({
                     type: 'basic',
-                    iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-                    title: 'Primer 2.0',
-                    message: 'Analyzing reel... Please wait.'
+                    title: 'Searching...',
+                    message: 'Instant is hard at work...'
                 })
                 
                 // Send image to backend for AI analysis
@@ -142,8 +141,7 @@ async function analyzeReelWithAI(imageData, dimensions, videoInfo) {
         // Also show desktop notification as backup
         chrome.notifications.create({
             type: 'basic',
-            iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-            title: '🎉 Primer 2.0 - Analysis Complete!',
+            title: 'Items Found!',
             message: `Found ${analysisResult.items?.length || 0} clothing items! Check Instagram page for shopping button.`
         })
         
@@ -163,8 +161,7 @@ async function analyzeReelWithAI(imageData, dimensions, videoInfo) {
         // Show error notification
         chrome.notifications.create({
             type: 'basic',
-            iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-            title: 'Primer 2.0',
+            title: 'Instant',
             message: 'Reel analysis failed. Click extension for details.'
         })
     }

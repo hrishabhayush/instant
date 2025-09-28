@@ -1196,11 +1196,11 @@ function showFloatingShoppingButton(itemCount) {
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: linear-gradient(135deg, #8b7355, #a68b5b);
+                background: #000000;
                 color: white;
-                padding: 15px 20px;
+                padding: 16px 20px;
                 border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
                 cursor: pointer;
                 z-index: 10000;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -1208,11 +1208,15 @@ function showFloatingShoppingButton(itemCount) {
                 font-size: 14px;
                 text-align: center;
                 animation: slideIn 0.3s ease-out;
-                max-width: 200px;
+                max-width: 220px;
+                border: 1px solid white;
+                backdrop-filter: blur(10px);
             ">
-                <div style="font-size: 16px; margin-bottom: 5px;">🛒</div>
-                <div>Found ${itemCount} items!</div>
-                <div style="font-size: 12px; opacity: 0.9; margin-top: 3px;">Click to shop</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <div style="font-size: 16px; font-weight: 700;">Instant</div>
+                </div>
+                <div style="font-size: 14px; margin-bottom: 2px;">Found ${itemCount} items!</div>
+                <div style="font-size: 12px; opacity: 0.9;">Click to shop</div>
             </div>
             <style>
                 @keyframes slideIn {
@@ -1260,27 +1264,39 @@ function showLoadingButton() {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #8b7355, #a68b5b);
+            background: #000000;
             color: white;
-            padding: 15px 20px;
+            padding: 16px 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 10000;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-weight: 600;
             font-size: 14px;
             text-align: center;
             animation: slideIn 0.3s ease-out;
-            max-width: 200px;
+            max-width: 220px;
+            border: 1px solid white;
+            backdrop-filter: blur(10px);
         ">
-            <div style="font-size: 16px; margin-bottom: 5px;">⏳</div>
-            <div>Analyzing reel...</div>
-            <div style="font-size: 12px; opacity: 0.9; margin-top: 3px;">Please wait</div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <div style="font-size: 16px; font-weight: 700;">Searching<span id="searching-dots">...</span></div>
+            </div>
+            <div style="font-size: 14px; margin-bottom: 2px; opacity: 0.5;">Instant is hard at work...</div>
         </div>
         <style>
             @keyframes slideIn {
                 from { transform: translateX(100%); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes dots {
+                0%, 20% { content: '.'; }
+                40% { content: '..'; }
+                60%, 100% { content: '...'; }
+            }
+            #searching-dots::after {
+                content: '...';
+                animation: dots 1.5s infinite;
             }
         </style>
     `
