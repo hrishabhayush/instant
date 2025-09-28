@@ -22,6 +22,13 @@ pnpm install
 pnpm start
 ```
 
+### x402
+
+```bash
+cd apps/x402
+node seller.js
+```
+
 Starting the chrome extension 
 
 Load unpack the extension folder which is all written in javascript. 
