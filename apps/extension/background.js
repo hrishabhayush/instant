@@ -83,9 +83,44 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 })
 
+// Function to check wallet authorization status
+async function checkWalletAuthorization() {
+    try {
+        // Check if wallet is authorized
+        const result = await chrome.storage.local.get(['instant_wallet_authorized', 'instant_wallet_address']);
+        
+        if (result.instant_wallet_authorized === 'true' && result.instant_wallet_address) {
+            console.log('✅ Wallet authorized for payments:', result.instant_wallet_address);
+            return true;
+        }
+        
+        console.log('❌ Wallet not authorized');
+        return false;
+    } catch (error) {
+        console.error('Error checking wallet authorization:', error);
+        return false;
+    }
+}
+
 // Function to analyze reel with AI
 async function analyzeReelWithAI(imageData, dimensions, videoInfo) {
     try {
+        // Check wallet authorization first
+        const isWalletAuthorized = await checkWalletAuthorization();
+        if (!isWalletAuthorized) {
+            console.log('❌ Wallet not authorized. Cannot proceed with analysis.');
+            
+            // Show authorization required notification
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'src/assets/logo.png',
+                title: 'Wallet Authorization Required',
+                message: 'Please authorize your wallet on the Instant website first.'
+            });
+            
+            return;
+        }
+        
         // Clear previous results when starting new analysis
         console.log("🧹 Clearing previous results for new analysis...")
         chrome.storage.local.remove(['lastCapturedImage', 'lastDimensions', 'lastVideoInfo', 'lastAnalysis', 'lastSearchResults'])
@@ -202,6 +237,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse(result)
         })
         return true // Keep message channel open
+    } else if (request.action === "updatePaymentStatus") {
+        console.log("🔐 Updating wallet authorization:", request.paymentData)
+        
+        chrome.storage.local.set({
+            instant_wallet_authorized: request.paymentData.verified,
+            instant_wallet_address: request.paymentData.walletAddress,
+            instant_wallet_signature: request.paymentData.signature
+        });
+        
+        sendResponse({ success: true })
     } else if (request.action === "openExtension") {
         // Handle floating button click - try to open popup
         console.log("Floating button clicked, attempting to open extension")

@@ -18,10 +18,19 @@ const FACILITATOR_URL = process.env.FACILITATOR_URL || "https://x402.polygon.tec
 
 const fetchWithPayment = wrapFetchWithPayment(fetch, account);
 
-const url = process.env.QUICKSTART_RESOURCE_URL || 'http://localhost:4021/weather';
+// Test analyze-reel endpoint
+const analyzeUrl = process.env.ANALYZE_URL || 'http://localhost:4021/analyze-reel';
+const searchUrl = process.env.SEARCH_URL || 'http://localhost:4021/search-similar-products';
 
-fetchWithPayment(url, { //url should be something like https://api.example.com/paid-endpoint
-  method: "GET",
+// Test analyze-reel payment
+fetchWithPayment(analyzeUrl, {
+  method: "POST",
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    imageData: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..." // Sample base64
+  })
 })
   .then(async response => {
     const body = await response.json();
